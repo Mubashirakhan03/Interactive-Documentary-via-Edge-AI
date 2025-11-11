@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload PDF and Text-to-Speech Synthesis</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Roboto', sans-serif;
+            background-color: #f0f2f5;
+        }
+
+        header {
+            width: 100%;
+            background-color: #3498db;
+            padding: 20px 20px; /* Increased padding for larger header */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            height: 60px;
+        }
+
+        header img {
+            height: 120px; /* Increased logo size */
+            margin-right: 20px;
+            position: absolute;
+            left: 10px;
+            top: 1%;
+            bottom: 5%;
+        }
+
+        header h1 {
+            color: white;
+            font-size: 1.5rem;
+            margin: 0;
+        }
+
+        .container {
+            width: 70%;
+            max-width: 1200px;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        h1.page-title {
+            margin: 20px 0;
+            color: #333;
+            font-size: 2rem;
+            text-align: center;
+        }
+
+        form {
+            width: 100%;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        form h2 {
+            text-align: left;
+            color: #2980b9;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        label {
+            display: block;
+            text-align: left;
+            margin-top: 10px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input[type="file"], button, select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 20px;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        #loadingMessage {
+            color: #3498db;
+        }
+
+        .slider {
+            width: 100%;
+            height: 400px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 100%;
+            transition: left 1s;
+        }
+
+        .slide.active {
+            left: 0;
+        }
+
+        .slide .background {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-size: cover;
+            background-position: center;
+            opacity: 0.5;
+        }
+
+        .slide .content {
+            position: absolute;
+            top: 50%;
+            left: 10%;
+            transform: translateY(-50%);
+            color: white;
+            z-index: 2;
+            animation: fadeIn 1s;
+        }
+
+        .slider-nav {
+            position: absolute;
+            top: 50%;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            transform: translateY(-50%);
+            z-index: 3;
+        }
+
+        .slider-nav #left {
+            background: none;
+            text-align: justify;
+            border: none;
+            color: #6e6161;
+            padding: 10px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background 0.3s;
+        }
+
+        .slider-nav #right {
+            background: none;
+            text-align: end;
+            border: none;
+            color: #6e6161;
+            padding: 10px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background 0.3s;
+        }
+
+        .slider-nav button:hover {
+            background: none;
+        }
+
+        .slider-nav button:focus {
+            outline: none;
+        }
+
+        .fancy-border {
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+        }
+
+        .fancy-text {
+            font-size: 1.2rem;
+            color: #2c3e50;
+        }
+
+        .fancy-heading {
+            font-size: 2rem;
+            color: #2980b9;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(-50%); }
+        }
+
+        @keyframes slideIn {
+            from { right: -50%; }
+            to { right: 10%; }
+        }
+    </style>
+   
+   
+   
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('uploadForm').addEventListener('submit', handleFileUpload);
+            document.getElementById('languageSelect').addEventListener('change', updateSpeakers);
+            updateSpeakers();  // Initialize speakers on page load
+
+            document.getElementById('synthesizeForm').addEventListener('submit', function(event) {
+                event.preventDefault();
+                synthesizeText();
+            });
+
+            startSlider();
+        });
+
+        let currentIndex = 0;
+        let sliderInterval;
+
+        function handleFileUpload(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            document.getElementById('loadingMessage').innerText = 'Uploading and extracting text...';
+
+            fetch('/upload_pdf', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById('loadingMessage').innerText = 'Error uploading file.';
+                    console.error('Error:', data.error);
+                } else {
+                    document.getElementById('text').value = data.text;
+                    document.getElementById('loadingMessage').innerText = '';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('loadingMessage').innerText = 'Error uploading file.';
+            });
+        }
+
+        function updateSpeakers() {
+            var languageSelect = document.getElementById('languageSelect');
+            var selectedLanguage = languageSelect.value;
+            var speakers = JSON.parse(document.getElementById('speakersData').textContent);
+            var speakerSelect = document.getElementById('speakerSelect');
+            speakerSelect.innerHTML = '';  // Clear previous options
+
+            if (speakers[selectedLanguage]) {
+                speakers[selectedLanguage].forEach(function(speaker) {
+                    var option = document.createElement('option');
+                    option.value = speaker.voice_id;
+                    option.text = speaker.name;
+                    speakerSelect.appendChild(option);
+                });
+            }
+        }
+
+        function estimateTime(text) {
+            const AVERAGE_TIME_PER_SENTENCE = 2.5;
+            const sentences = text.match(/[^\.!\?]+[\.!\?]+/g) || [];
+            const numberOfSentences = sentences.length;
+            const estimatedTime = numberOfSentences * AVERAGE_TIME_PER_SENTENCE;
+            return estimatedTime;
+        }
+
+        function synthesizeText() {
+            var form = document.getElementById('synthesizeForm');
+            var formData = new FormData(form);
+            var jsonData = {};
+            formData.forEach((value, key) => jsonData[key] = value);
+
+            const estimatedTime = estimateTime(jsonData.text);
+            document.getElementById('estimatedTime').textContent = Estimated time: ${estimatedTime.toFixed(2)} seconds;
+
+            Array.from(form.elements).forEach(element => element.disabled = true);
+            var loadingMessage = document.createElement('p');
+            loadingMessage.id = 'loadingMessage';
+            loadingMessage.innerText = 'Loading...';
+            form.appendChild(loadingMessage);
+
+            fetch('/synthesize', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(jsonData)
+            })
+            .then(response => {
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let receivedLength = 0;
+                let buffer = '';
+
+                function read() {
+                    reader.read().then(({ done, value }) => {
+                        if (done) {
+                            loadingMessage.innerText = 'Completed!';
+                            return;
+                        }
+
+                        receivedLength += value.length;
+                        const chunk = decoder.decode(value, { stream: true });
+                        buffer += chunk;
+
+                        let boundary = buffer.indexOf('\n');
+                        while (boundary !== -1) {
+                            const jsonChunk = buffer.slice(0, boundary);
+                            buffer = buffer.slice(boundary + 1);
+
+                            try {
+                                const data = JSON.parse(jsonChunk);
+                                if (data.progress) {
+                                    loadingMessage.innerText = Progress: ${data.progress.toFixed(2)}%;
+                                } else if (data.redirect_url) {
+                                    window.location.href = data.redirect_url;
+                                } else if (data.error) {
+                                    alert('Synthesis failed: ' + data.error);
+                                    Array.from(form.elements).forEach(element => element.disabled = false);
+                                    loadingMessage.remove();
+                                }
+                            } catch (e) {
+                                console.error('Error parsing JSON:', e);
+                            }
+
+                            boundary = buffer.indexOf('\n');
+                        }
+
+                        read();
+                    });
+                }
+
+                read();
+            })
+            .catch(error => {
+                alert('Error: ' + error);
+                Array.from(form.elements).forEach(element => element.disabled = false);
+                loadingMessage.remove();
+            });
+        }
+
+        function startSlider() {
+            const slides = document.querySelectorAll('.slide');
+            if (slides.length > 0) {
+                slides[currentIndex].classList.add('active');
+                sliderInterval = setInterval(() => {
+                    navigateSlider(1);
+                }, 5000);
+            }
+        }
+
+        function navigateSlider(direction) {
+            const slides = document.querySelectorAll('.slide');
+            const totalSlides = slides.length;
+            slides[currentIndex].classList.remove('active');
+            currentIndex = (currentIndex + direction + totalSlides) % totalSlides;
+            slides[currentIndex].classList.add('active');
+            resetSliderInterval();
+        }
+
+        function resetSliderInterval() {
+            clearInterval(sliderInterval);
+            sliderInterval = setInterval(() => {
+                navigateSlider(1);
+            }, 5000);
+        }
+    </script>
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Website Icon">
+            <h1>PDF and TTS Tool</h1>
+        </div>
+    </header>
+
+    <div class="slider">
+        <div class="slide active">
+            <div class="background" style="background-image: url('{{ url_for('static', filename='images/3.png') }}');"></div>
+            <div class="content fancy-text">
+                <h2 class="fancy-heading">Slide 1 Heading</h2>
+                <p>Slide 1 subheading with more details.</p>
+            </div>
+        </div>
+        <div class="slide">
+            <div class="background" style="background-image: url('{{ url_for('static', filename='images/6.png') }}');"></div>
+            <div class="content fancy-text">
+                <h2 class="fancy-heading">Slide 2 Heading</h2>
+                <p>Slide 2 subheading with more details.</p>
+            </div>
+        </div>
+        <div class="slide">
+            <div class="background" style="background-image: url('{{ url_for('static', filename='images/4.png') }}');"></div>
+            <div class="content fancy-text">
+                <h2 class="fancy-heading">Slide 3 Heading</h2>
+                <p>Slide 3 subheading with more details.</p>
+            </div>
+        </div>
+        <div class="slide">
+            <div class="background" style="background-image: url('{{ url_for('static', filename='images/5.png') }}');"></div>
+            <div class="content fancy-text">
+                <h2 class="fancy-heading">Slide 4 Heading</h2>
+                <p>Slide 4 subheading with more details.</p>
+            </div>
+        </div>
+        <div class="slider-nav">
+            <button id="left" onclick="navigateSlider(-1)">&#10094;</button>
+            <button id="right" onclick="navigateSlider(1)">&#10095;</button>
+        </div>
+    </div>
+    <div class="container">
+        <h1 class="page-title">Upload PDF and Text-to-Speech Synthesis</h1>
+
+        <form id="uploadForm" enctype="multipart/form-data" class="fancy-border">
+            <h2>Upload PDF</h2>
+            <label for="file">Select PDF:</label>
+            <input type="file" id="file" name="file" accept=".pdf">
+            <button type="submit">Upload</button>
+        </form>
+
+        <div id="loadingMessage"></div>
+
+        <form id="synthesizeForm" class="fancy-border">
+            <h2>Text-to-Speech Synthesis</h2>
+            <label for="languageSelect">Select Language:</label>
+            <select id="languageSelect" name="language">
+                {% for model_id, language in languages.items() %}
+                    <option value="{{ model_id }}">{{ language }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="speakerSelect">Select Speaker:</label>
+            <select id="speakerSelect" name="speaker">
+                <!-- Options will be populated by JavaScript -->
+            </select>
+
+            <label for="text">Text:</label>
+            <textarea id="text" name="text" rows="4">{{ extracted_text }}</textarea>
+
+            <button type="submit">Synthesize</button>
+        </form>
+
+        <div id="estimatedTime"></div>
+
+        <script id="speakersData" type="application/json">
+            {{ speakers | tojson }}
+        </script>
+    </div>
+</body>
+</html>

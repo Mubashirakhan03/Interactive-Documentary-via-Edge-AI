@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text and Audio</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .highlight {
+            background-color: yellow;
+        }
+
+        #text-container {
+            width: 60%;
+            height: 300px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        #controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        #loader {
+            display: none;
+            border: 4px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 4px solid #3498db;
+            width: 24px;
+            height: 24px;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        audio {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Text and Audio</h1>
+    <div id="text-container">
+        {% for sentence in sentences %}
+        <p data-start="{{ sentence.start_time }}" data-end="{{ sentence.end_time }}">{{ sentence.text }}</p>
+        {% endfor %}
+    </div>
+    <audio id="audio-player" controls>
+        <source src="{{ audio_url }}" type="audio/mp3">
+    </audio>
+    <div id="controls">
+        <label for="playback-speed">Playback Speed:</label>
+        <select id="playback-speed">
+            <option value="0.25">0.25</option>
+            <option value="0.5">0.5</option>
+            <option value="0.75">0.75</option>
+            <option value="1" selected>1</option>
+            <option value="1.25">1.25</option>
+            <option value="1.5">1.5</option>
+            <option value="1.75">1.75</option>
+            <option value="2">2</option>
+            <option value="2.25">2.25</option>
+            <option value="2.5">2.5</option>
+            <option value="2.75">2.75</option>
+            <option value="3">3</option>
+        </select>
+        <button id="previous">Previous</button>
+        <button id="next">Next</button>
+        <div id="loader"></div>
+    </div>
+    <script>
+        $(document).ready(function() {
+            const sentences = $("#text-container p");
+            let currentSentence = 0;
+            const audio = document.getElementById('audio-player');
+
+            function highlightSentence(index) {
+                sentences.removeClass('highlight');
+                if (index >= 0 && index < sentences.length) {
+                    $(sentences[index]).addClass('highlight');
+                    // Scroll to the highlighted sentence
+                    const container = $('#text-container');
+                    const scrollTo = $(sentences[index]);
+                    container.animate({
+                        scrollTop: scrollTo.offset().top - container.offset().top + container.scrollTop() - (container.height() / 2) + (scrollTo.height() / 2)
+                    }, 500);
+                }
+            }
+
+            $('#playback-speed').change(function() {
+                audio.playbackRate = $(this).val();
+            });
+
+            $('#previous').click(function() {
+                if (currentSentence > 0) {
+                    currentSentence--;
+                    highlightSentence(currentSentence);
+                    const start = parseFloat($(sentences[currentSentence]).data('start'));
+                    audio.currentTime = start;
+                }
+            });
+
+            $('#next').click(function() {
+                if (currentSentence < sentences.length - 1) {
+                    currentSentence++;
+                    highlightSentence(currentSentence);
+                    const start = parseFloat($(sentences[currentSentence]).data('start'));
+                    audio.currentTime = start;
+                }
+            });
+
+            audio.ontimeupdate = function() {
+                const currentTime = audio.currentTime;
+                sentences.each(function(index, element) {
+                    const start = parseFloat($(element).data('start'));
+                    const end = parseFloat($(element).data('end'));
+                    if (currentTime >= start && currentTime <= end) {
+                        currentSentence = index;
+                        highlightSentence(currentSentence);
+                    }
+                });
+            };
+
+            highlightSentence(currentSentence);
+        });
+    </script>
+</body>
+</html>

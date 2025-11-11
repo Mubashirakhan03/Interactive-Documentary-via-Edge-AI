@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text-to-Speech Synthesis</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        form {
+            width: 60%;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        select, textarea, button, input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 20px;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        #estimatedTime {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        #loadingMessage {
+            color: #3498db;
+        }
+    </style>
+    <script>
+        const AVERAGE_TIME_PER_SENTENCE = 2.5;
+
+        function estimateTime(text) {
+            const sentences = text.match(/[^\.!\?]+[\.!\?]+/g) || [];
+            return sentences.length * AVERAGE_TIME_PER_SENTENCE;
+        }
+
+        function updateSpeakers() {
+            const languageSelect = document.getElementById('languageSelect');
+            const selectedLanguage = languageSelect.value;
+            const speakers = JSON.parse(document.getElementById('speakersData').textContent);
+            const speakerSelect = document.getElementById('speakerSelect');
+            speakerSelect.innerHTML = '';
+
+            if (speakers[selectedLanguage]) {
+                speakers[selectedLanguage].forEach(speaker => {
+                    const option = document.createElement('option');
+                    option.value = speaker.voice_id;
+                    option.text = speaker.name;
+                    speakerSelect.appendChild(option);
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("LOaded kidi")
+            document.getElementById('languageSelect').addEventListener('change', updateSpeakers);
+            updateSpeakers();
+
+            
+
+            document.getElementById('synthesizeForm').addEventListener('submit', event => {
+                event.preventDefault();
+                synthesizeText();
+            });
+        });
+
+
+        function synthesizeText() {
+            const form = document.getElementById('synthesizeForm');
+            const formData = new FormData(form);
+            const jsonData = {};
+            formData.forEach((value, key) => jsonData[key] = value);
+
+            const estimatedTime = estimateTime(jsonData.text);
+            document.getElementById('estimatedTime').textContent = `Estimated time: ${estimatedTime.toFixed(2)} seconds`;
+
+            Array.from(form.elements).forEach(element => element.disabled = true);
+            const loadingMessage = document.createElement('p');
+            loadingMessage.id = 'loadingMessage';
+            loadingMessage.innerText = 'Loading...';
+            form.appendChild(loadingMessage);
+
+                fetch('/synthesize', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(jsonData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.redirect_url) {
+                        window.location.href = data.redirect_url;
+                    } else {
+                        alert('Synthesis failed');
+                        Array.from(form.elements).forEach(element => element.disabled = false);
+                        document.getElementById('loadingMessage').remove();
+                    }
+                })
+                .catch(error => {
+                    alert('Error: ' + error);
+                    Array.from(form.elements).forEach(element => element.disabled = false);
+                    document.getElementById('loadingMessage').remove();
+                });
+        }
+    </script>
+</head>
+<body>
+    <h1>Text-to-Speech Synthesis</h1>
+    <form id="synthesizeForm">
+        <label for="languageSelect">Select Language:</label>
+        <select id="languageSelect" name="language">
+            {% for model_id, language in languages.items() %}
+                <option value="{{ model_id }}">{{ language }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="speakerSelect">Select Speaker:</label>
+        <select id="speakerSelect" name="speaker">
+            <!-- Options will be populated by JavaScript -->
+        </select>
+
+        <label for="text">Text:</label>
+        <textarea id="text" name="text" rows="4" cols="50">{{ extracted_text }}</textarea>
+
+        <button type="submit">Synthesize</button>
+    </form>
+
+    <div id="estimatedTime"></div>
+
+    <div id="loadingMessage"></div>
+
+    <script id="speakersData" type="application/json">
+        {{ speakers | tojson }}
+    </script>
+</body>
+</html>

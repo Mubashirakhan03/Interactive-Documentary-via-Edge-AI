@@ -1,0 +1,20 @@
+<form id="synthesizeForm" class="fancy-border form-container">
+    <h2>Text-to-Speech Synthesis</h2>
+    
+    <label for="languageSelect">Select Language:</label>
+    <select id="languageSelect" name="language" class="input-field">
+        {% for model_id, language in languages.items() %}
+            <option value="{{ model_id }}">{{ language }}</option>
+        {% endfor %}
+    </select>
+
+    <label>Select Speaker:</label>
+    <div id="speakerSelect" class="speaker-select-container">
+        <!-- Speaker images will be populated here by JavaScript -->
+    </div>
+    
+    <label for="text">Text:</label>
+    <textarea id="text" name="text" rows="4" class="input-field">{{ extracted_text }}</textarea>
+
+    <button class="button-select-textarea submit-button" type="submit" class="submit-button">Synthesize</button>
+</form>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Translator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <h1>Upload PDF for Translation</h1>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <label for="language">Select Language:</label>
+        <select name="language" id="language">
+            <option value="en">English</option>
+            <option value="ur">Urdu</option>
+            <option value="hi">Hindi</option>
+        </select><br>
+        <label for="voice_type">Select Voice Type:</label>
+        <select name="voice_type" id="voice_type">
+            <option value="female">Female</option>
+            <!-- Add male option if you switch to a service that supports it -->
+            <option value="male">Male</option>
+        </select><br>
+        <input type="file" name="file" accept="application/pdf"><br>
+        <input type="submit" value="Upload">
+    </form>
+</body>
+</html>

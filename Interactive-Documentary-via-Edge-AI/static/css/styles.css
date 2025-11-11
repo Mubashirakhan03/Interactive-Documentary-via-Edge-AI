@@ -1,0 +1,240 @@
+/* body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+
+h1 {
+    color: #333;
+}
+
+form {
+    margin-bottom: 20px;
+}
+
+textarea {
+    width: 100%;
+    font-family: monospace;
+    margin-bottom: 20px;
+} */
+
+
+
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+    background-color: #f0f2f5;
+}
+
+header {
+    width: 100%;
+    background-color: #3498db;
+    padding: 20px 20px; /* Increased padding for larger header */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    height: 60px;
+}
+
+.header-logo {
+    height: 120px; /* Increased logo size */
+    margin-right: 20px;
+    position: absolute;
+    left: 10px;
+    top: 1%;
+    bottom: 5%;
+}
+
+header h1 {
+    color: white;
+    font-size: 1.5rem;
+    margin: 0;
+}
+
+.container {
+    width: 70%;
+    max-width: 1200px;
+    text-align: center;
+    padding: 0 20px;
+}
+
+h1.page-title {
+    margin: 20px 0;
+    color: #333;
+    font-size: 2rem;
+    text-align: center;
+}
+
+form {
+    width: 100%;
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+form h2 {
+    text-align: left;
+    color: #2980b9;
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+}
+
+label {
+    display: block;
+    text-align: left;
+    margin-top: 10px;
+    font-weight: bold;
+    color: #555;
+}
+
+.input-field {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+.submit-button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    cursor: pointer;
+    margin-top: 20px;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.submit-button:hover {
+    background-color: #2980b9;
+}
+
+#loadingMessage {
+    color: #3498db;
+}
+
+.slider {
+    width: 100%;
+    height: 400px;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.slide {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 100%;
+    transition: left 1s;
+}
+
+.slide.active {
+    left: 0;
+}
+
+.slide .background {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-size: cover;
+    background-position: center;
+    opacity: 0.5;
+}
+
+.slide .content {
+    position: absolute;
+    top: 50%;
+    left: 10%;
+    transform: translateY(-50%);
+    color: white;
+    z-index: 2;
+    animation: fadeIn 1s;
+}
+
+.slider-nav {
+    position: absolute;
+    top: 50%;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    transform: translateY(-50%);
+    z-index: 3;
+}
+
+.slider-button {
+    background: none;
+    text-align: justify;
+    border: none;
+    color: #6e6161;
+    padding: 10px;
+    cursor: pointer;
+    font-size: 18px;
+    transition: background 0.3s;
+}
+
+.slider-button:hover {
+    background: none;
+}
+
+.slider-button:focus {
+    outline: none;
+}
+
+.fancy-border {
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+}
+
+.fancy-text {
+    font-size: 1.2rem;
+    color: #2c3e50;
+}
+
+.fancy-heading {
+    font-size: 2rem;
+    color: #2980b9;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.button-select-textarea{
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+.submit-button{
+    background-color: #3498db;
+    color: white;
+    border: none;
+    cursor: pointer;
+    margin-top: 20px;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(-50%); }
+}
+
+@keyframes slideIn {
+    from { right: -50%; }
+    to { right: 10%; }
+}

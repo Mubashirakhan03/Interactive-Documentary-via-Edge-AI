@@ -1,0 +1,30 @@
+<div class="slider">
+    <div class="slide active">
+        <div class="background" style="background-image: url('{{ url_for('static', filename='images/3.png') }}');"></div>
+        <div class="content fancy-text">
+            
+        </div>
+    </div>
+    <div class="slide">
+        <div class="background" style="background-image: url('{{ url_for('static', filename='images/6.png') }}');"></div>
+        <div class="content fancy-text">
+            
+        </div>
+    </div>
+    <div class="slide">
+        <div class="background" style="background-image: url('{{ url_for('static', filename='images/4.png') }}');"></div>
+        <div class="content fancy-text">
+            
+        </div>
+    </div>
+    <div class="slide">
+        <div class="background" style="background-image: url('{{ url_for('static', filename='images/5.png') }}');"></div>
+        <div class="content fancy-text">
+            
+        </div>
+    </div>
+    <div class="slider-nav">
+        <button id="left" class="slider-button" onclick="navigateSlider(-1)">&#10094;</button>
+        <button id="right" class="slider-button" onclick="navigateSlider(1)">&#10095;</button>
+    </div>
+</div>

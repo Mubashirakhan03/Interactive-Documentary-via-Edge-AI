@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Translated Text and Audio</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        .highlight {
+            background-color: yellow;
+        }
+        .sentence {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h1>Translated Text</h1>
+    <div id="text-container">
+        {% for i, sentence in enumerate(sentences) %}
+            <span class="sentence" data-start="{{ sentence_durations[i][0] }}" data-end="{{ sentence_durations[i][1] }}">{{ sentence }}</span>
+        {% endfor %}
+    </div>
+    <br>
+    <h1>Audio</h1>
+    <audio class="player" id="audio" controls>
+        <source src="{{ audio_url }}" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+    <br>
+    <button id="backward">Backward</button>
+    <button id="forward">Forward</button>
+    <button id="speed">Speed 1x</button>
+    <a href="{{ url_for('download_audio', filename=audio_url.split('/')[-1]) }}">Download Audio</a>
+    <a href="{{ json_url }}">Download Sentence Timings JSON</a>
+
+    <script>
+        const player = document.querySelector('.player')
+        const sentences = document.querySelectorAll('.sentence')
+        let currentIndex = 0
+        let playbackRate = 1.0
+
+        function updateHighlight() {
+            const currentTime = player.currentTime
+            sentences.forEach((sentence, index) => {
+                const start = parseFloat(sentence.getAttribute('data-start'))
+                const end = parseFloat(sentence.getAttribute('data-end'))
+                if (currentTime >= start && currentTime < end) {
+                    if (currentIndex !== index) {
+                        sentences[currentIndex].classList.remove('highlight')
+                        sentence.classList.add('highlight')
+                        currentIndex = index
+                    }
+                }
+            })
+        }
+
+        player.addEventListener('timeupdate', updateHighlight)
+
+        document.getElementById('forward').addEventListener('click', () => {
+            if (currentIndex < sentences.length - 1) {
+                currentIndex++
+                player.currentTime = parseFloat(sentences[currentIndex].getAttribute('data-start'))
+            }
+        })
+
+        document.getElementById('backward').addEventListener('click', () => {
+            if (currentIndex > 0) {
+                currentIndex--
+                player.currentTime = parseFloat(sentences[currentIndex].getAttribute('data-start'))
+            }
+        })
+
+        document.getElementById('speed').addEventListener('click', () => {
+            playbackRate = playbackRate === 1.0 ? 2.0 : (playbackRate === 2.0 ? 3.0 : 1.0)
+            player.playbackRate = playbackRate
+            document.getElementById('speed').textContent = `Speed ${playbackRate}x`
+        })
+    </script>
+</body>
+</html>
