@@ -50,6 +50,14 @@ Supports multi-language translation, text processing, and low-latency speech syn
 
 6. System streams audio output back to the user.
 
+
+## Project Demo Folder
+
+You can watch the demo of the project here:  
+👉 [Click to open Demo Folder](https://github.com/Mubashirakhan03/Interactive-Documentary-via-Edge-AI/tree/main/Interactive-Documentary-via-Edge-AI/demo)
+
+
+
 <h2><b>Run Locally</b></h2>
 
 <pre>
